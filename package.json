@@ -4,7 +4,8 @@
   "description": "this is not a test",
   "main": "index.js",
   "scripts": {
-    "start": "budo index.js:bundle.js --live"
+    "start": "budo index.js:bundle.js --live",
+    "build": "browserify . -o bundle.js -g uglifyify"
   },
   "author": "ryan thorngren",
   "license": "ISC",
@@ -16,6 +17,10 @@
     "raf-loop": "^1.1.3",
     "three": "^0.116.1",
     "three-orbit-controls": "^82.1.0",
-    "three-window-resize": "^1.0.4"
+    "three-window-resize": "^1.0.4",
+    "uglifyify": "^5.0.2"
+  },
+  "devDependencies": {
+    "webpack": "^5.17.0"
   }
 }
