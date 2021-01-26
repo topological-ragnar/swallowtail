@@ -14,10 +14,12 @@ class Sketch {
         this.gui.show()
         this.params.a = 0
         this.params.b = 0
-        this.params.epsilon = 0.05
+        this.params.c = 0
+        this.params.epsilon = 0
         this.gui.add(this.params, 'a', -10, 10, 0.1);
         this.gui.add(this.params, 'b', -10, 10, 0.1);
-        this.gui.add(this.params, 'epsilon', 0, 1,0.01);
+        this.gui.add(this.params, 'c', -2, 2, 0.1);
+        // this.gui.add(this.params, 'epsilon', 0, 1,0.01);
         
         this.scene = new THREE.Scene()
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
@@ -49,8 +51,8 @@ class Sketch {
         const spritematerial = new THREE.SpriteMaterial({ map: map, color: 0xffffff });
 
         this.sprites = []
-        this.numSprites = 1000
-        this.spacing = 5
+        this.numSprites = 100
+        this.spacing = 1
         for(var i = 0; i < this.numSprites; i++){
             const sprite = new THREE.Sprite(spritematerial);
             sprite.scale.set(0.1, 0.1, 1)
@@ -80,13 +82,9 @@ class Sketch {
         var axisObject = new THREE.Line(axis,axisMaterial)
         this.scene.add(axisObject)
 
-        var discrim = new THREE.BufferGeometry()
-        points = []
-        for (var i = -50; i < 50; i++) {
-            points.push(new THREE.Vector3((i / 5)/10-3, (Math.cbrt(27*(i/5)*(i/5)/4))/10-3, 0))
-        }
-        discrim.setFromPoints(points)
-        var discrimObject = new THREE.Line(discrim, axisMaterial)
+        this.discrim = new THREE.BufferGeometry()
+        this.setDiscrim()
+        var discrimObject = new THREE.Line(this.discrim, axisMaterial)
         this.scene.add(discrimObject)
         this.paramPoint = new THREE.Sprite(spritematerial)
         this.paramPoint.scale.set(0.1, 0.1, 1)
@@ -107,7 +105,7 @@ class Sketch {
     }
 
     potential(x) {
-        return this.params.a + this.params.b * x - x * x * x
+        return this.params.a + this.params.b * x + this.params.c * x * x + x * x * x * x
     }
 
     setGraph() {
@@ -118,6 +116,20 @@ class Sketch {
         this.graph.setFromPoints(points)
     }
 
+    setDiscrim(){
+        var points = []
+        for (var i = -30; i < 31; i++) {
+            var u = this.params.c
+            var v = i/20
+            points.push(new THREE.Vector3(
+                (3 * Math.pow(v, 4) + u * v * v) / 10 - 3,
+                (-2*u*v-4*Math.pow(v,3))/10-3,
+                0
+            ))
+        }
+        this.discrim.setFromPoints(points)
+    }
+
     render() {
         // requestAnimationFrame(this.animate);
         var dt = this.clock.getDelta();
@@ -125,6 +137,7 @@ class Sketch {
         this.renderer.render(this.scene, this.camera);
 
         this.setGraph()
+        this.setDiscrim()
 
         this.paramPoint.position.x = this.params.a/10-3
         this.paramPoint.position.y = this.params.b/ 10 - 3
@@ -135,8 +148,8 @@ class Sketch {
         for(var i = 0; i < this.numSprites; i++){
             var x = this.sprites[i].position.x
             this.sprites[i].position.x += dt*this.potential(x)
-            if(Math.abs(this.potential(x))< this.params.epsilon){
-                this.sprites[i].position.x = i / this.spacing - this.numSprites / (this.spacing * 2)
+            if(x > 5){
+                this.sprites[i].position.x = - i / this.spacing
             }
         }
         // this.controls.update();
